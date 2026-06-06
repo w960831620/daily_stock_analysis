@@ -1,195 +1,49 @@
 # US Liquidity Dashboard
 
-美股流动性红黄绿灯看板，用来跟踪 **Fed资产负债表、TGA、RRP、银行准备金、NFCI、HY Spread、VIX、SPX/QQQ趋势**，并输出一个 0-100 的流动性评分和 SPX 短期走势判断。
+Streamlit 美股流动性看板，用于跟踪 FRED 与 Yahoo Finance 数据，计算 0-100 综合流动性评分，并输出红黄绿灯和未来 1-4 周 SPX/SPY 倾向。
 
-> 用途：辅助判断美股风险环境和仓位节奏，不构成投资建议。
-
----
-
-## 1. 功能
-
-### 核心指标
-
-- Fed Total Assets：美联储总资产
-- TGA：美国财政部现金账户
-- RRP：隔夜逆回购
-- Bank Reserves：银行准备金
-- SOFR - IORB：短端资金压力
-- NFCI：芝加哥联储金融条件指数
-- HY Spread：高收益债利差
-- VIX：市场波动率
-- SPX / QQQ / BTC：风险资产趋势确认
-
-### 核心公式
-
-```text
-Net Liquidity = WALCL - WTREGEN - RRPONTSYD
-```
-
-即：
-
-```text
-净流动性 = 美联储总资产 - TGA - RRP
-```
-
-### 输出结果
-
-- 🟢 Green：流动性/风险偏好偏多
-- 🟡 Yellow：中性震荡，等待确认
-- 🔴 Red：流动性/风险偏好偏空
-
-并输出：
-
-- Liquidity Score：0-100分
-- SPX走势判断：Bullish / Neutral / Bearish
-- 主要驱动原因
-- Net Liquidity vs SPX 双轴图
-- SPX 50MA / 200MA 趋势确认图
-- 因子评分明细表
-
----
-
-## 2. 安装
-
-进入项目目录：
-
-```bash
-cd us_liquidity_dashboard
-```
-
-安装依赖：
+## 安装方法
 
 ```bash
 pip install -r requirements.txt
 ```
 
-如果 Windows 下 pip 不识别，用：
-
-```bash
-python -m pip install -r requirements.txt
-```
-
----
-
-## 3. 运行
+## 运行方法
 
 ```bash
 streamlit run app.py
 ```
 
-或：
+Windows 也可以双击 `start.bat`，脚本会自动安装依赖并启动看板。
 
-```bash
-python -m streamlit run app.py
-```
+## 功能说明
 
-浏览器会打开：
+- Yahoo Finance 数据：`SPY`、`QQQ`、`^VIX`、`BTC-USD`
+- FRED 数据：`WALCL`、`RRPONTSYD`、`SOFR`、`IORB`、`NFCI`
+- 核心计算：`Net Liquidity = WALCL - RRPONTSYD`
+- 0-100 综合流动性评分
+- 红黄绿灯：
+  - 70 以上：🟢 偏多
+  - 40-70：🟡 中性
+  - 40 以下：🔴 偏空
+- SPY、QQQ、BTC 趋势判断
+- VIX 状态判断
+- Net Liquidity 与 SPY 双轴图
+- 未来 1-4 周 SPX/SPY 倾向：Bullish / Neutral / Bearish，并展示原因
 
-```text
-http://localhost:8501
-```
+评分加分项包括：
 
----
+- 净流动性 4 周上升
+- SPY 高于 50MA
+- QQQ 高于 50MA
+- VIX 低于 20
+- NFCI 下降
+- SOFR-IORB 没有明显扩大
 
-## 4. Windows 一键启动
+## Demo Mode
 
-双击：
+如果 FRED API、Yahoo Finance 或网络不可用，应用会自动进入 Demo Mode，使用模拟数据保持页面可启动和可演示，不会报错退出。
 
-```text
-start.bat
-```
+## Codex 云环境说明
 
-这个脚本会自动安装依赖并启动看板。
-
----
-
-## 5. 数据源
-
-### FRED
-
-使用 FRED 公开 CSV：
-
-- WALCL
-- WTREGEN
-- RRPONTSYD
-- RESBALNS
-- SOFR
-- IORB
-- NFCI
-- BAMLH0A0HYM2
-
-### Yahoo Finance
-
-通过 `yfinance` 获取：
-
-- ^GSPC：SPX
-- SPY
-- QQQ
-- ^VIX
-- BTC-USD
-- HYG
-- TLT
-- UUP
-
----
-
-## 6. Demo Mode
-
-如果 FRED 或 Yahoo Finance 暂时无法访问，程序会自动切换到 Demo Mode，用模拟数据保持页面可运行。
-
-页面顶部会提示：
-
-```text
-当前为 Demo Mode
-```
-
-联网后刷新即可恢复真实数据。
-
----
-
-## 7. 评分逻辑
-
-模型不是机器学习黑箱，而是可解释的因子打分：
-
-| 因子 | 方向 |
-|---|---|
-| 净流动性4周上升 | 加分 |
-| 净流动性13周上升 | 加分 |
-| 银行准备金上升 | 加分 |
-| NFCI下降 | 加分 |
-| HY Spread下降 | 加分 |
-| SOFR-IORB下降 | 加分 |
-| VIX下降或低位 | 加分 |
-| SPX站上50MA/200MA | 加分 |
-| QQQ站上50MA/200MA | 加分 |
-| BTC站上50MA | 加分 |
-
-### 分数区间
-
-| 分数 | 状态 | 解读 |
-|---:|---|---|
-| 70-100 | 🟢 Green | 风险偏好偏多 |
-| 45-70 | 🟡 Yellow | 中性震荡 |
-| 0-45 | 🔴 Red | 防回撤 |
-
----
-
-## 8. 后续可升级方向
-
-可以继续加入：
-
-- AAII散户情绪
-- Put/Call Ratio
-- MOVE指数
-- PMI / ISM New Orders
-- 铜金比
-- BTC Dominance
-- 美元指数 DXY
-- 自动邮件/Telegram/微信提醒
-- 每日定时生成市场日报
-
----
-
-## 9. 风险提示
-
-本项目只用于观察宏观流动性和风险资产环境。模型输出不等于投资建议，也不能保证预测准确。
+Codex 云环境只负责验证应用可以安装、编译和启动，不作为长期公网托管服务。长期使用请部署到自己的服务器、Streamlit Community Cloud 或其他托管平台。
